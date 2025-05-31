@@ -1,0 +1,92 @@
+[build-system]
+requires = [
+    "build==1.2.2.post1",
+    "hatch~=1.13.0",
+    "hatchling~=1.26.3",
+    "versioningit~=3.1.2"
+]
+build-backend = "hatchling.build"
+
+
+[project]
+authors = [
+    { name="Balázs Bognár", github="bognarbalazs" },
+]
+classifiers = [
+   "Programming Language :: Python :: 3",
+   "Operating System :: OS Independent",
+]
+description = "Description"
+name = "name-of-the-application"
+keywords = ["example","cli","tool", "python", "starter-pack"]
+dynamic = ["version"]
+dependencies = [
+    "logzero==1.7.0"
+]
+requires-python = ">=3.13"
+readme="README.md"
+
+
+[project.optional-dependencies]
+# Dependencies exclusively for testing go here.
+test = [
+  "logzero==1.7.0",
+  "coverage==7.8.0",
+  "pytest-cov==6.1.1"
+]
+
+
+[project.scripts]
+name-of-the-application = "name_of_the_application:main"
+
+
+[tool.hatch.version]
+source = "versioningit"
+default-version = "0.0.0+unknown"
+
+
+[tool.hatch.version.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{version}+dirty"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.dirty"
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/name_of_the_application"]
+"src/name_of_the_application" = ["name-of-the-application"]
+
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src"
+]
+
+
+[tool.pytest.ini_options]
+addopts = "--junitxml=report.xml --cov --cov-report term --cov-report xml:coverage.xml -v"
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+
+
+[tool.coverage.run]
+omit = [
+    # omit anything in a .local directory anywhere
+    "*/.local/*",
+    # omit everything in /usr
+    "/usr/*",
+    # omit everything in src/
+    "src/**"
+    ]
+
+
+[tool.coverage.report]
+fail_under = 70
+show_missing = false
+
+
+[tool.coverage.paths]
+source = [
+    "tests/",
+    ]

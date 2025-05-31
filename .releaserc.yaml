@@ -1,0 +1,47 @@
+branches:
+  - main
+  - +([0-9])?(.{+([0-9]),x}).x
+  - master
+  - next
+  - next-major
+  - name: beta
+    prerelease: true
+  - name: alpha
+    prerelease: true
+tagFormat: 'v${version}'
+plugins:
+  - - "@semantic-release/commit-analyzer"
+  - - "@semantic-release/gitlab"
+  - - "@semantic-release/release-notes-generator"
+    - preset: conventionalcommits
+      presetConfig:
+        types:
+          - type: major
+            section: "🚨 Breaking Changes 🚨"
+            hidden: false
+          - type: feat
+            section: "🚀 Features 🚀"
+            hidden: false
+          - type: fix
+            section: "🛠 Bug Fixes 🛠"
+            hidden: false
+          - type: perf
+            section: "⚡️ Performance Improvements ⚡️"
+            hidden: false
+          - type: revert
+            section: "⏮️️ Reverts ⏮️️"
+            hidden: false
+          - type: build
+            section: "⚙️ Build ⚙️"
+            hidden: false
+          - type: test
+            section: "🧪 test 🧪️"
+            hidden: false
+  - '@semantic-release/changelog'
+  - - '@semantic-release/git'
+    - assets:
+        - CHANGELOG.md
+      message: |-
+        chore(release): v${nextRelease.version}
+
+        ${nextRelease.notes}

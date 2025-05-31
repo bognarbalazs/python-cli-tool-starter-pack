@@ -1,0 +1,59 @@
+include:
+  - local: default.gitlab-ci.yml
+
+variables:
+  PYTHON_BASE_IMAGE: python:3.13.3-alpine3.21
+
+ruff_lint:
+  stage: check
+  image: ${PYTHON_BASE_IMAGE}
+  script:
+    - ruff check --output-format=gitlab > code-quality-report.json
+  allow_failure: true
+  artifacts:
+    when: always
+    reports:
+      codequality: code-quality-report.json
+
+unit_tests:
+  stage: test
+  image: ${PYTHON_BASE_IMAGE}
+  artifacts:
+    when: on_success
+    reports:
+      junit: report.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+  before_script:
+    - !reference [.common_script_snippets, generate_pypirc_and_pipconf]
+  script:
+    - pip install '.[test]' --no-build-isolation
+    - coverage run -m pytest
+
+semantic_versioning:
+  interruptible: false
+  stage: build
+  image: ${IMAGE_SEMANTIC_RELEASE}
+  variables:
+    GITLAB_TOKEN: ${GITLAB_TOKEN}
+  before_script:
+    - !reference [.semver_script_snippets, check_releaserc]
+  script:
+    - npx semantic-release --repository-url ${CI_REPOSITORY_URL} --gitlab-url ${CI_SERVER_URL}
+
+wheel_build:
+  stage: build
+  image: ${PYTHON_BASE_IMAGE}
+  script:
+    - python -m build -n
+  artifacts:
+    paths:
+      - dist/
+
+twine_publish:
+  stage: publish
+  image: ${PYTHON_BASE_IMAGE}
+  script:
+    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token python -m twine upload --verbose --repository-url ${CI_API_V4_URL}/${PYPI_REPOSITORY_TYPE:-projects}/${PYPI_REPOSITORY_ID:-${CI_PROJECT_ID}}/packages/pypi dist/*
+  when: on_success
